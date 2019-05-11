@@ -4558,6 +4558,11 @@
 #define GPIOTE_CONFIG_PSEL_Pos (8UL) /*!< Position of PSEL field. */
 #define GPIOTE_CONFIG_PSEL_Msk (0x1FUL << GPIOTE_CONFIG_PSEL_Pos) /*!< Bit mask of PSEL field. */
 
+/* GPIOTE_CONFIG_PORT* needed for PORT1 pin support */
+#define GPIOTE_CONFIG_PORT_Pos (13UL) /*!< Position of PORT field (bit) */
+#define GPIOTE_CONFIG_PORT_Msk (0x1UL << GPIOTE_CONFIG_PORT_Pos) /*!< Bit mask of PORT field. */
+
+
 /* Bits 1..0 : Mode */
 #define GPIOTE_CONFIG_MODE_Pos (0UL) /*!< Position of MODE field. */
 #define GPIOTE_CONFIG_MODE_Msk (0x3UL << GPIOTE_CONFIG_MODE_Pos) /*!< Bit mask of MODE field. */

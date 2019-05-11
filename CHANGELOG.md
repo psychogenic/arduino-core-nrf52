@@ -1,3 +1,9 @@
+## port1IO branch 2019-05-11
+###### Core:
+  - Enhanced core nRF to support all those pins on PORT1
+  Pat Deegan, https://psychogenic.com/
+  
+
 ## 1.0.2
 ###### Core:
   - Added Primo Core platform

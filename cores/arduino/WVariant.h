@@ -54,7 +54,8 @@ typedef enum _EPWMChannel
 typedef enum _EPortType
 {
 	NOT_A_PORT=-1,
-	PORT0=0
+	PORT0=0,
+	PORT1=1	/* Support for nRF52 PORT1 pins */
 } EPortType ;
 
 

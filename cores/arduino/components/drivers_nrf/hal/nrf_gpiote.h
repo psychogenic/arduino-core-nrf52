@@ -25,6 +25,20 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
+ * 
+ *
+ * Addendum by Pat Deegan, https://psychogenic.com
+ * Added parameter support for pins on PORT1, 
+ * and modified utility functions accordingly.
+ *
+ * User facing API remains identical, but for an expanded set of valid values
+ * for the pin indices.
+ *
+ * Short version: any call using a pin > 31 will be translated
+ * to 
+ * 	(pin % 32)
+ * on PORT 1
+ *
  */
 #ifndef NRF_GPIOTE_H__
 #define NRF_GPIOTE_H__
@@ -48,6 +62,8 @@
 #error "Chip family not specified"
 #endif
 
+#define _NRFBASEPINNUMBER(p) ((p) ?  (p % 32) : 0 )
+#define _NRF_PIN_PORTSELECT(p) ( (p<32) ? 0UL : 1UL )
  /**
  * @enum nrf_gpiote_polarity_t
  * @brief Polarity for the GPIOTE channel.
@@ -345,14 +361,21 @@ __STATIC_INLINE void nrf_gpiote_event_disable(uint32_t idx)
 
 __STATIC_INLINE void nrf_gpiote_event_configure(uint32_t idx, uint32_t pin, nrf_gpiote_polarity_t polarity)
 {
-  NRF_GPIOTE->CONFIG[idx] &= ~(GPIOTE_CONFIG_PSEL_Msk | GPIOTE_CONFIG_POLARITY_Msk);
-  NRF_GPIOTE->CONFIG[idx] |= ((pin << GPIOTE_CONFIG_PSEL_Pos) & GPIOTE_CONFIG_PSEL_Msk) |
+
+  NRF_GPIOTE->CONFIG[idx] &= ~(GPIOTE_CONFIG_PSEL_Msk | GPIOTE_CONFIG_PORT_Msk | GPIOTE_CONFIG_POLARITY_Msk);
+  NRF_GPIOTE->CONFIG[idx] |= ((_NRFBASEPINNUMBER(pin) << GPIOTE_CONFIG_PSEL_Pos) & GPIOTE_CONFIG_PSEL_Msk) |
+                             ((_NRF_PIN_PORTSELECT(pin) << GPIOTE_CONFIG_PORT_Pos) & GPIOTE_CONFIG_PORT_Msk) |
                               ((polarity << GPIOTE_CONFIG_POLARITY_Pos) & GPIOTE_CONFIG_POLARITY_Msk);
 }
 
 __STATIC_INLINE uint32_t nrf_gpiote_event_pin_get(uint32_t idx)
 {
-    return ((NRF_GPIOTE->CONFIG[idx] & GPIOTE_CONFIG_PSEL_Msk) >> GPIOTE_CONFIG_PSEL_Pos);
+	uint32_t pin = ((NRF_GPIOTE->CONFIG[idx] & GPIOTE_CONFIG_PSEL_Msk) >> GPIOTE_CONFIG_PSEL_Pos);
+	uint8_t  port = (NRF_GPIOTE->CONFIG[idx] & GPIOTE_CONFIG_PORT_Msk) >> GPIOTE_CONFIG_PORT_Pos;
+	if (port) {
+		pin += 32;
+	}
+	return pin;
 }
 
 __STATIC_INLINE nrf_gpiote_polarity_t nrf_gpiote_event_polarity_get(uint32_t idx)
@@ -384,10 +407,12 @@ __STATIC_INLINE void nrf_gpiote_task_configure(uint32_t idx, uint32_t pin,
                                                 nrf_gpiote_outinit_t  init_val)
 {
   NRF_GPIOTE->CONFIG[idx] &= ~(GPIOTE_CONFIG_PSEL_Msk |
+                               GPIOTE_CONFIG_PORT_Msk |
                                GPIOTE_CONFIG_POLARITY_Msk |
                                GPIOTE_CONFIG_OUTINIT_Msk);
 
-  NRF_GPIOTE->CONFIG[idx] |= ((pin << GPIOTE_CONFIG_PSEL_Pos) & GPIOTE_CONFIG_PSEL_Msk) |
+  NRF_GPIOTE->CONFIG[idx] |= ((_NRFBASEPINNUMBER(pin) << GPIOTE_CONFIG_PSEL_Pos) & GPIOTE_CONFIG_PSEL_Msk) |
+                             ((_NRF_PIN_PORTSELECT(pin) << GPIOTE_CONFIG_PORT_Pos) & GPIOTE_CONFIG_PORT_Msk) |
                              ((polarity << GPIOTE_CONFIG_POLARITY_Pos) & GPIOTE_CONFIG_POLARITY_Msk) |
                              ((init_val << GPIOTE_CONFIG_OUTINIT_Pos) & GPIOTE_CONFIG_OUTINIT_Msk);
 }
